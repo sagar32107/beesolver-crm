@@ -29,11 +29,35 @@ case "SET_FBAR":return{...s,fbar:a.p};
 default:return s;}}
 
 function Badge({color,children,onClick,style:xs}){return <span onClick={onClick} style={{display:"inline-flex",alignItems:"center",gap:4,padding:"2px 10px",borderRadius:999,fontSize:12,fontWeight:600,background:color+"18",color,cursor:onClick?"pointer":"default",whiteSpace:"nowrap",...xs}}>{children}</span>;}
-function Btn({children,v="primary",sz="md",onClick,style:xs,disabled}){const b={border:"none",borderRadius:8,cursor:disabled?"not-allowed":"pointer",fontWeight:600,display:"inline-flex",alignItems:"center",gap:6,transition:"all .15s",opacity:disabled?.5:1};const vs={primary:{background:"#6366f1",color:"#fff",padding:sz==="sm"?"6px 12px":"8px 18px",fontSize:sz==="sm"?12:14},secondary:{background:"#f1f5f9",color:"#334155",padding:sz==="sm"?"6px 12px":"8px 18px",fontSize:sz==="sm"?12:14},ghost:{background:"transparent",color:"#64748b",padding:"6px 8px",fontSize:13},danger:{background:"#fee2e2",color:"#ef4444",padding:sz==="sm"?"6px 12px":"8px 18px",fontSize:sz==="sm"?12:14}};return <button onClick={onClick} disabled={disabled} style={{...b,...vs[v],...xs}}>{children}</button>;}
-function Inp({label,value,onChange,type="text",placeholder,options}){const s={width:"100%",padding:"8px 12px",borderRadius:8,border:"1px solid #e2e8f0",fontSize:14,outline:"none",background:"#fff",boxSizing:"border-box"};return(<div style={{marginBottom:12}}>{label&&<label style={{fontSize:12,fontWeight:600,color:"#64748b",marginBottom:4,display:"block"}}>{label}</label>}{type==="select"?<select value={value} onChange={e=>onChange(e.target.value)} style={s}><option value="">Select...</option>{(options||[]).map(o=><option key={typeof o==="object"?o.value:o} value={typeof o==="object"?o.value:o}>{typeof o==="object"?o.label:o}</option>)}</select>:type==="textarea"?<textarea value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} rows={3} style={{...s,resize:"vertical"}}/>:<input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} style={s}/>}</div>);}
-function Modal({title,onClose,children,width=520}){return(<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.4)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:20}} onClick={onClose}><div onClick={e=>e.stopPropagation()} style={{background:"#fff",borderRadius:16,width:"100%",maxWidth:width,maxHeight:"90vh",overflow:"auto",boxShadow:"0 25px 50px -12px rgba(0,0,0,.25)"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"16px 20px",borderBottom:"1px solid #f1f5f9"}}><h3 style={{margin:0,fontSize:16,fontWeight:700}}>{title}</h3><button onClick={onClose} style={{background:"none",border:"none",cursor:"pointer",color:"#94a3b8",padding:4}}>{IC.x}</button></div><div style={{padding:20}}>{children}</div></div></div>);}
 
-/* ───── Duplicate Detection ───── */
+function Btn({children,v="primary",sz="md",onClick,style:xs,disabled}){
+  const b={border:"none",borderRadius:8,cursor:disabled?"not-allowed":"pointer",fontWeight:600,display:"inline-flex",alignItems:"center",gap:6,transition:"all .15s",opacity:disabled?.5:1};
+  const vs={primary:{background:"#6366f1",color:"#fff",padding:sz==="sm"?"6px 12px":"8px 18px",fontSize:sz==="sm"?12:14},secondary:{background:"#f1f5f9",color:"#334155",padding:sz==="sm"?"6px 12px":"8px 18px",fontSize:sz==="sm"?12:14},ghost:{background:"transparent",color:"#64748b",padding:"6px 8px",fontSize:13},danger:{background:"#fee2e2",color:"#ef4444",padding:sz==="sm"?"6px 12px":"8px 18px",fontSize:sz==="sm"?12:14}};
+  return <button onClick={onClick} disabled={disabled} style={{...b,...vs[v],...xs}}>{children}</button>;
+}
+
+function Inp({label,value,onChange,type="text",placeholder,options}){
+  const s={width:"100%",padding:"8px 12px",borderRadius:8,border:"1px solid #e2e8f0",fontSize:14,outline:"none",background:"#fff",boxSizing:"border-box"};
+  return(<div style={{marginBottom:12}}>
+    {label&&<label style={{fontSize:12,fontWeight:600,color:"#64748b",marginBottom:4,display:"block"}}>{label}</label>}
+    {type==="select"?<select value={value} onChange={e=>onChange(e.target.value)} style={s}><option value="">Select...</option>{(options||[]).map(o=><option key={typeof o==="object"?o.value:o} value={typeof o==="object"?o.value:o}>{typeof o==="object"?o.label:o}</option>)}</select>
+    :type==="textarea"?<textarea value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} rows={3} style={{...s,resize:"vertical"}}/>
+    :<input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} style={s}/>}
+  </div>);
+}
+
+function Modal({title,onClose,children,width=520}){
+  return(<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.4)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:20}} onClick={onClose}>
+    <div onClick={e=>e.stopPropagation()} style={{background:"#fff",borderRadius:16,width:"100%",maxWidth:width,maxHeight:"90vh",overflow:"auto",boxShadow:"0 25px 50px -12px rgba(0,0,0,.25)"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"16px 20px",borderBottom:"1px solid #f1f5f9"}}>
+        <h3 style={{margin:0,fontSize:16,fontWeight:700}}>{title}</h3>
+        <button onClick={onClose} style={{background:"none",border:"none",cursor:"pointer",color:"#94a3b8",padding:4}}>{IC.x}</button>
+      </div>
+      <div style={{padding:20}}>{children}</div>
+    </div>
+  </div>);
+}
+
 function checkDuplicates(name,email,company,leads,excludeId){
   const dupes=[];
   const n=(name||"").toLowerCase().trim();
@@ -51,21 +75,23 @@ function checkDuplicates(name,email,company,leads,excludeId){
   return dupes.sort((a,b)=>b.score-a.score);
 }
 
-/* ───── Activity Logger ───── */
-async function logActivity(leadId,userId,action,details={}){
-  await supabase.from("activities").insert({lead_id:leadId,user_id:userId,action,details});
+async function logActivity(leadId,userId,action,details){
+  try{await supabase.from("activities").insert({lead_id:leadId,user_id:userId,action:action,details:details||{}});}catch(e){}
 }
 
-/* ───── Lead Form with Duplicate Detection ───── */
 function LeadForm({lead,stages,customFields,profiles,leads,onSave,onClose}){
   const [f,setF]=useState(lead||{name:"",email:"",company:"",phone:"",stage_id:stages[0]?.id||"",value:"",source:"",assignee_id:"",notes:"",custom_data:{}});
   const [dupes,setDupes]=useState([]);
-  const u=(k,v)=>{const nf={...f,[k]:v};setF(nf);if(k==="name"||k==="email"||k==="company")setDupes(checkDuplicates(nf.name,nf.email,nf.company,leads,lead?.id));};
+  const u=(k,v)=>{const nf={...f,[k]:v};setF(nf);if(k==="name"||k==="email"||k==="company")setDupes(checkDuplicates(nf.name,nf.email,nf.company,leads||[],lead?.id));};
   const uCF=(k,v)=>setF(p=>({...p,custom_data:{...p.custom_data,[k]:v}}));
-  const profileOpts=profiles.map(p=>({value:p.id,label:p.full_name||p.email}));
-  const stageOpts=stages.map(s=>({value:s.id,label:s.name}));
+  const profileOpts=(profiles||[]).map(p=>({value:p.id,label:p.full_name||p.email}));
+  const stageOpts=(stages||[]).map(s=>({value:s.id,label:s.name}));
   return(<>
-    {dupes.length>0&&<div style={{padding:"10px 14px",background:"#fef3c7",border:"1px solid #fbbf24",borderRadius:10,marginBottom:14,display:"flex",alignItems:"flex-start",gap:8}}><span style={{color:"#f59e0b",flexShrink:0,marginTop:2}}>{IC.warn}</span><div><div style={{fontSize:13,fontWeight:600,color:"#92400e"}}>Possible duplicate{dupes.length>1?"s":""} found:</div>{dupes.map(d=><div key={d.lead.id} style={{fontSize:12,color:"#92400e",marginTop:2}}>{d.lead.name}{d.lead.email?" — "+d.lead.email:""}{d.lead.company?" ("+d.lead.company+")":""}</div>)}</div></div>}
+    {dupes.length>0&&<div style={{padding:"10px 14px",background:"#fef3c7",border:"1px solid #fbbf24",borderRadius:10,marginBottom:14,display:"flex",alignItems:"flex-start",gap:8}}>
+      <span style={{color:"#f59e0b",flexShrink:0,marginTop:2}}>{IC.warn}</span>
+      <div><div style={{fontSize:13,fontWeight:600,color:"#92400e"}}>Possible duplicate{dupes.length>1?"s":""} found:</div>
+      {dupes.map(d=><div key={d.lead.id} style={{fontSize:12,color:"#92400e",marginTop:2}}>{d.lead.name}{d.lead.email?" — "+d.lead.email:""}{d.lead.company?" ("+d.lead.company+")":""}</div>)}</div>
+    </div>}
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0 16px"}}>
       <Inp label="Full Name *" value={f.name} onChange={v=>u("name",v)} placeholder="John Doe"/>
       <Inp label="Email" value={f.email} onChange={v=>u("email",v)} placeholder="john@example.com" type="email"/>
@@ -76,7 +102,10 @@ function LeadForm({lead,stages,customFields,profiles,leads,onSave,onClose}){
       <Inp label="Source" value={f.source} onChange={v=>u("source",v)} type="select" options={["Website","Referral","LinkedIn","Cold Outreach","Conference","Other"]}/>
       <Inp label="Assignee" value={f.assignee_id} onChange={v=>u("assignee_id",v)} type="select" options={profileOpts}/>
     </div>
-    {customFields.length>0&&<><div style={{fontSize:12,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,margin:"8px 0"}}>Custom Fields</div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0 16px"}}>{customFields.map(cf=><Inp key={cf.id} label={cf.name} value={f.custom_data?.[cf.id]||""} onChange={v=>uCF(cf.id,cf.field_type==="number"?Number(v):v)} type={cf.field_type==="select"?"select":cf.field_type==="number"?"number":"text"} options={cf.options}/>)}</div></>}
+    {customFields&&customFields.length>0&&<><div style={{fontSize:12,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,margin:"8px 0"}}>Custom Fields</div>
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0 16px"}}>
+      {customFields.map(cf=><Inp key={cf.id} label={cf.name} value={f.custom_data?.[cf.id]||""} onChange={v=>uCF(cf.id,cf.field_type==="number"?Number(v):v)} type={cf.field_type==="select"?"select":cf.field_type==="number"?"number":"text"} options={cf.options}/>)}
+    </div></>}
     <Inp label="Notes" value={f.notes} onChange={v=>u("notes",v)} type="textarea" placeholder="Any notes..."/>
     <div style={{display:"flex",gap:8,justifyContent:"flex-end",marginTop:8}}>
       <Btn v="secondary" onClick={onClose}>Cancel</Btn>
@@ -85,18 +114,17 @@ function LeadForm({lead,stages,customFields,profiles,leads,onSave,onClose}){
   </>);
 }
 
-/* ───── Comments / Notes Section ───── */
 function CommentsSection({leadId,user,profiles}){
   const [comments,setComments]=useState([]);
   const [text,setText]=useState("");
   useEffect(()=>{supabase.from("activities").select("*").eq("lead_id",leadId).eq("action","comment").order("created_at",{ascending:false}).then(({data})=>setComments(data||[]));},[leadId]);
   const add=async()=>{
     if(!text.trim())return;
-    const {data}=await supabase.from("activities").insert({lead_id:leadId,user_id:user.id,action:"comment",details:{text}}).select().single();
+    const{data}=await supabase.from("activities").insert({lead_id:leadId,user_id:user.id,action:"comment",details:{text:text}}).select().single();
     if(data)setComments(p=>[data,...p]);
     setText("");
   };
-  const getName=(uid)=>{const p=profiles.find(x=>x.id===uid);return p?.full_name||p?.email||"Unknown";};
+  const getName=(uid)=>{const p=(profiles||[]).find(x=>x.id===uid);return p?.full_name||p?.email||"Unknown";};
   return(<div style={{marginTop:20}}>
     <div style={{fontSize:13,fontWeight:700,color:"#334155",marginBottom:10,display:"flex",alignItems:"center",gap:6}}>{IC.msg} Notes & Comments</div>
     <div style={{display:"flex",gap:8,marginBottom:12}}>
@@ -111,20 +139,19 @@ function CommentsSection({leadId,user,profiles}){
   </div>);
 }
 
-/* ───── Activity Timeline ───── */
 function ActivityTimeline({leadId,profiles}){
   const [acts,setActs]=useState([]);
   useEffect(()=>{supabase.from("activities").select("*").eq("lead_id",leadId).neq("action","comment").order("created_at",{ascending:false}).limit(20).then(({data})=>setActs(data||[]));},[leadId]);
-  const getName=(uid)=>{const p=profiles.find(x=>x.id===uid);return p?.full_name||p?.email||"System";};
+  const getName=(uid)=>{const p=(profiles||[]).find(x=>x.id===uid);return p?.full_name||p?.email||"System";};
   const desc=(a)=>{
     switch(a.action){
       case "created":return "created this lead";
       case "updated":return "updated this lead";
-      case "stage_changed":return `moved to ${a.details?.to||"new stage"}`;
-      case "task_added":return `added task: ${a.details?.text||""}`;
-      case "task_done":return `completed task: ${a.details?.text||""}`;
-      case "assigned":return `assigned to ${a.details?.to||"someone"}`;
-      case "file_attached":return `attached file: ${a.details?.name||""}`;
+      case "stage_changed":return "moved to "+(a.details?.to||"new stage");
+      case "task_added":return "added task: "+(a.details?.text||"");
+      case "task_done":return "completed task: "+(a.details?.text||"");
+      case "assigned":return "assigned to "+(a.details?.to||"someone");
+      case "file_attached":return "attached file: "+(a.details?.name||"");
       default:return a.action;
     }
   };
@@ -138,28 +165,28 @@ function ActivityTimeline({leadId,profiles}){
   </div>);
 }
 
-/* ───── File Attachments ───── */
 function FileAttachments({leadId,user}){
   const [files,setFiles]=useState([]);
   const [uploading,setUploading]=useState(false);
-  const ref=useRef();
+  const ref=useRef(null);
   useEffect(()=>{loadFiles();},[leadId]);
   const loadFiles=async()=>{
-    const {data}=await supabase.storage.from("attachments").list(leadId+"/");
-    setFiles(data||[]);
+    try{const{data}=await supabase.storage.from("attachments").list(leadId+"/");setFiles(data||[]);}catch(e){setFiles([]);}
   };
   const upload=async(e)=>{
     const file=e.target.files?.[0];if(!file)return;
     setUploading(true);
-    const path=leadId+"/"+Date.now()+"_"+file.name;
-    await supabase.storage.from("attachments").upload(path,file);
-    await logActivity(leadId,user.id,"file_attached",{name:file.name});
-    await loadFiles();
+    try{
+      const path=leadId+"/"+Date.now()+"_"+file.name;
+      await supabase.storage.from("attachments").upload(path,file);
+      await logActivity(leadId,user.id,"file_attached",{name:file.name});
+      await loadFiles();
+    }catch(err){}
     setUploading(false);
   };
   const getUrl=(name)=>{
-    const {data}=supabase.storage.from("attachments").getPublicUrl(leadId+"/"+name);
-    return data?.publicUrl;
+    const{data}=supabase.storage.from("attachments").getPublicUrl(leadId+"/"+name);
+    return data?.publicUrl||"#";
   };
   const del=async(name)=>{
     await supabase.storage.from("attachments").remove([leadId+"/"+name]);
@@ -170,7 +197,6 @@ function FileAttachments({leadId,user}){
     {files.map(f=><div key={f.name} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 0",borderBottom:"1px solid #f8fafc"}}>
       <span style={{color:"#6366f1"}}>{IC.clip}</span>
       <a href={getUrl(f.name)} target="_blank" rel="noreferrer" style={{flex:1,fontSize:13,color:"#3b82f6",textDecoration:"none"}}>{f.name.replace(/^\d+_/,"")}</a>
-      <span style={{fontSize:11,color:"#94a3b8"}}>{(f.metadata?.size/1024).toFixed(0)||"?"}KB</span>
       <button onClick={()=>del(f.name)} style={{background:"none",border:"none",cursor:"pointer",color:"#cbd5e1",padding:2}}>{IC.trash}</button>
     </div>)}
     <input ref={ref} type="file" onChange={upload} style={{display:"none"}}/>
@@ -178,21 +204,41 @@ function FileAttachments({leadId,user}){
   </div>);
 }
 
-/* ───── Lead Detail Drawer ───── */
 function LeadDetail({lead,stages,customFields,profiles,dispatch,onClose,user}){
-  const [tt,setTT]=useState("");const [td,setTD]=useState("");const [tasks,setTasks]=useState([]);
+  const [tt,setTT]=useState("");
+  const [td,setTD]=useState("");
+  const [tasks,setTasks]=useState([]);
   const [tab,setTab]=useState("details");
   const stage=stages.find(s=>s.id===lead.stage_id);
-  const assignee=profiles.find(p=>p.id===lead.assignee_id);
-  const isAdmin=profiles.find(p=>p.id===user?.id)?.role==="admin";
+  const assignee=(profiles||[]).find(p=>p.id===lead.assignee_id);
+  const isAdmin=(profiles||[]).find(p=>p.id===user?.id)?.role==="admin";
 
   useEffect(()=>{supabase.from("tasks").select("*").eq("lead_id",lead.id).order("created_at").then(({data})=>setTasks(data||[]));},[lead.id]);
 
-  const addTask=async()=>{if(!tt)return;const{data}=await supabase.from("tasks").insert({lead_id:lead.id,text:tt,due_date:td||null,created_by:user.id}).select().single();if(data){setTasks(p=>[...p,data]);await logActivity(lead.id,user.id,"task_added",{text:tt});}setTT("");setTD("");};
-  const toggleTask=async(t)=>{await supabase.from("tasks").update({is_done:!t.is_done}).eq("id",t.id);setTasks(p=>p.map(x=>x.id===t.id?{...x,is_done:!x.is_done}:x));if(!t.is_done)await logActivity(lead.id,user.id,"task_done",{text:t.text});};
+  const addTask=async()=>{
+    if(!tt)return;
+    const{data}=await supabase.from("tasks").insert({lead_id:lead.id,text:tt,due_date:td||null,created_by:user.id}).select().single();
+    if(data){setTasks(p=>[...p,data]);await logActivity(lead.id,user.id,"task_added",{text:tt});}
+    setTT("");setTD("");
+  };
+  const toggleTask=async(t)=>{
+    await supabase.from("tasks").update({is_done:!t.is_done}).eq("id",t.id);
+    setTasks(p=>p.map(x=>x.id===t.id?{...x,is_done:!x.is_done}:x));
+    if(!t.is_done)await logActivity(lead.id,user.id,"task_done",{text:t.text});
+  };
   const delTask=async(id)=>{await supabase.from("tasks").delete().eq("id",id);setTasks(p=>p.filter(x=>x.id!==id));};
-  const moveStage=async(sid)=>{const sName=stages.find(s=>s.id===sid)?.name;await supabase.from("leads").update({stage_id:sid}).eq("id",lead.id);dispatch({type:"UPD_LEAD",p:{id:lead.id,stage_id:sid}});await logActivity(lead.id,user.id,"stage_changed",{to:sName});};
-  const assignLead=async(pid)=>{const pName=profiles.find(p=>p.id===pid)?.full_name;await supabase.from("leads").update({assignee_id:pid}).eq("id",lead.id);dispatch({type:"UPD_LEAD",p:{id:lead.id,assignee_id:pid}});await logActivity(lead.id,user.id,"assigned",{to:pName});};
+  const moveStage=async(sid)=>{
+    const sName=(stages.find(s=>s.id===sid)||{}).name||"";
+    await supabase.from("leads").update({stage_id:sid}).eq("id",lead.id);
+    dispatch({type:"UPD_LEAD",p:{id:lead.id,stage_id:sid}});
+    await logActivity(lead.id,user.id,"stage_changed",{to:sName});
+  };
+  const assignLead=async(pid)=>{
+    const pName=((profiles||[]).find(p=>p.id===pid)||{}).full_name||"";
+    await supabase.from("leads").update({assignee_id:pid}).eq("id",lead.id);
+    dispatch({type:"UPD_LEAD",p:{id:lead.id,assignee_id:pid}});
+    await logActivity(lead.id,user.id,"assigned",{to:pName});
+  };
 
   const tabs=[{id:"details",label:"Details"},{id:"tasks",label:"Tasks"},{id:"comments",label:"Notes"},{id:"files",label:"Files"},{id:"activity",label:"Activity"}];
 
@@ -201,7 +247,7 @@ function LeadDetail({lead,stages,customFields,profiles,dispatch,onClose,user}){
       <div style={{padding:"16px 20px",borderBottom:"1px solid #f1f5f9",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
         <h3 style={{margin:0,fontSize:16}}>{lead.name}</h3>
         <div style={{display:"flex",gap:4}}>
-          <Btn v="ghost" sz="sm" onClick={()=>{dispatch({type:"SET_MODAL",p:{type:"editLead",lead}});onClose();}}>{IC.edit}</Btn>
+          <Btn v="ghost" sz="sm" onClick={()=>{dispatch({type:"SET_MODAL",p:{type:"editLead",lead:lead}});onClose();}}>{IC.edit}</Btn>
           <button onClick={onClose} style={{background:"none",border:"none",cursor:"pointer",color:"#94a3b8",padding:4}}>{IC.x}</button>
         </div>
       </div>
@@ -216,11 +262,21 @@ function LeadDetail({lead,stages,customFields,profiles,dispatch,onClose,user}){
             {lead.source&&<Badge color="#64748b">{lead.source}</Badge>}
           </div>
           <div style={{display:"grid",gap:12,fontSize:14}}>
-            {[["Company",lead.company],["Email",lead.email],["Phone",lead.phone],["Assignee",assignee?.full_name],["Created",lead.created_at?fmtDate(lead.created_at):"—"]].map(([k,v])=><div key={k} style={{display:"flex",justifyContent:"space-between"}}><span style={{color:"#94a3b8"}}>{k}</span><span style={{fontWeight:500}}>{v||"—"}</span></div>)}
-            {customFields.map(cf=><div key={cf.id} style={{display:"flex",justifyContent:"space-between"}}><span style={{color:"#94a3b8"}}>{cf.name}</span><span style={{fontWeight:500}}>{lead.custom_data?.[cf.id]||"—"}</span></div>)}
+            {[["Company",lead.company],["Email",lead.email],["Phone",lead.phone],["Assignee",assignee?.full_name],["Created",lead.created_at?fmtDate(lead.created_at):"—"]].map(([k,v])=>
+              <div key={k} style={{display:"flex",justifyContent:"space-between"}}><span style={{color:"#94a3b8"}}>{k}</span><span style={{fontWeight:500}}>{v||"—"}</span></div>
+            )}
+            {(customFields||[]).map(cf=>
+              <div key={cf.id} style={{display:"flex",justifyContent:"space-between"}}><span style={{color:"#94a3b8"}}>{cf.name}</span><span style={{fontWeight:500}}>{lead.custom_data?.[cf.id]||"—"}</span></div>
+            )}
           </div>
           {lead.notes&&<div style={{marginTop:16,padding:12,background:"#f8fafc",borderRadius:10,fontSize:13,color:"#475569"}}>{lead.notes}</div>}
-          {isAdmin&&<div style={{marginTop:16}}><label style={{fontSize:12,fontWeight:600,color:"#64748b",display:"block",marginBottom:4}}>Assign to team member</label><select value={lead.assignee_id||""} onChange={e=>assignLead(e.target.value)} style={{padding:"8px 12px",borderRadius:8,border:"1px solid #e2e8f0",fontSize:14,width:"100%"}}><option value="">Unassigned</option>{profiles.map(p=><option key={p.id} value={p.id}>{p.full_name||p.email}</option>)}</select></div>}
+          {isAdmin&&<div style={{marginTop:16}}>
+            <label style={{fontSize:12,fontWeight:600,color:"#64748b",display:"block",marginBottom:4}}>Assign to team member</label>
+            <select value={lead.assignee_id||""} onChange={e=>assignLead(e.target.value)} style={{padding:"8px 12px",borderRadius:8,border:"1px solid #e2e8f0",fontSize:14,width:"100%"}}>
+              <option value="">Unassigned</option>
+              {(profiles||[]).map(p=><option key={p.id} value={p.id}>{p.full_name||p.email}</option>)}
+            </select>
+          </div>}
           <div style={{marginTop:16,display:"flex",gap:6,flexWrap:"wrap",alignItems:"center"}}>
             <span style={{fontSize:12,color:"#94a3b8",fontWeight:600}}>Move to:</span>
             {stages.filter(s=>s.id!==lead.stage_id).map(s=><Badge key={s.id} color={s.color} onClick={()=>moveStage(s.id)} style={{cursor:"pointer",fontSize:11}}>{s.name}</Badge>)}
@@ -228,8 +284,23 @@ function LeadDetail({lead,stages,customFields,profiles,dispatch,onClose,user}){
         </>}
         {tab==="tasks"&&<div>
           <div style={{fontSize:13,fontWeight:700,color:"#334155",marginBottom:10}}>Tasks & Follow-ups</div>
-          {tasks.map(t=>(<div key={t.id} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 0",borderBottom:"1px solid #f1f5f9"}}><div onClick={()=>toggleTask(t)} style={{width:20,height:20,borderRadius:6,border:t.is_done?"none":"2px solid #cbd5e1",background:t.is_done?"#10b981":"transparent",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexShrink:0}}>{t.is_done&&<span style={{color:"#fff"}}>{IC.check}</span>}</div><div style={{flex:1}}><div style={{fontSize:13,textDecoration:t.is_done?"line-through":"none",color:t.is_done?"#94a3b8":"#334155"}}>{t.text}</div>{t.due_date&&<div style={{fontSize:11,color:!t.is_done&&isOverdue(t.due_date)?"#ef4444":"#94a3b8"}}>Due {fmtDate(t.due_date)}{!t.is_done&&isOverdue(t.due_date)?" • Overdue":""}</div>}</div><button onClick={()=>delTask(t.id)} style={{background:"none",border:"none",cursor:"pointer",color:"#cbd5e1",padding:2}}>{IC.trash}</button></div>))}
-          <div style={{display:"flex",gap:8,marginTop:10}}><input value={tt} onChange={e=>setTT(e.target.value)} placeholder="New task..." style={{flex:1,padding:"7px 10px",borderRadius:8,border:"1px solid #e2e8f0",fontSize:13}} onKeyDown={e=>e.key==="Enter"&&addTask()}/><input type="date" value={td} onChange={e=>setTD(e.target.value)} style={{padding:"7px 10px",borderRadius:8,border:"1px solid #e2e8f0",fontSize:13,width:130}}/><Btn sz="sm" onClick={addTask}>{IC.plus}</Btn></div>
+          {tasks.map(t=>(
+            <div key={t.id} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 0",borderBottom:"1px solid #f1f5f9"}}>
+              <div onClick={()=>toggleTask(t)} style={{width:20,height:20,borderRadius:6,border:t.is_done?"none":"2px solid #cbd5e1",background:t.is_done?"#10b981":"transparent",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexShrink:0}}>
+                {t.is_done&&<span style={{color:"#fff"}}>{IC.check}</span>}
+              </div>
+              <div style={{flex:1}}>
+                <div style={{fontSize:13,textDecoration:t.is_done?"line-through":"none",color:t.is_done?"#94a3b8":"#334155"}}>{t.text}</div>
+                {t.due_date&&<div style={{fontSize:11,color:!t.is_done&&isOverdue(t.due_date)?"#ef4444":"#94a3b8"}}>Due {fmtDate(t.due_date)}{!t.is_done&&isOverdue(t.due_date)?" • Overdue":""}</div>}
+              </div>
+              <button onClick={()=>delTask(t.id)} style={{background:"none",border:"none",cursor:"pointer",color:"#cbd5e1",padding:2}}>{IC.trash}</button>
+            </div>
+          ))}
+          <div style={{display:"flex",gap:8,marginTop:10}}>
+            <input value={tt} onChange={e=>setTT(e.target.value)} placeholder="New task..." style={{flex:1,padding:"7px 10px",borderRadius:8,border:"1px solid #e2e8f0",fontSize:13}} onKeyDown={e=>e.key==="Enter"&&addTask()}/>
+            <input type="date" value={td} onChange={e=>setTD(e.target.value)} style={{padding:"7px 10px",borderRadius:8,border:"1px solid #e2e8f0",fontSize:13,width:130}}/>
+            <Btn sz="sm" onClick={addTask}>{IC.plus}</Btn>
+          </div>
         </div>}
         {tab==="comments"&&<CommentsSection leadId={lead.id} user={user} profiles={profiles}/>}
         {tab==="files"&&<FileAttachments leadId={lead.id} user={user}/>}
@@ -239,15 +310,32 @@ function LeadDetail({lead,stages,customFields,profiles,dispatch,onClose,user}){
   );
 }
 
-/* ───── Table with Custom Columns ───── */
-const DEFAULT_COLS=[{id:"name",label:"Name",on:true,system:true},{id:"company",label:"Company",on:true},{id:"stage",label:"Stage",on:true},{id:"value",label:"Value",on:true},{id:"assignee",label:"Assignee",on:true},{id:"source",label:"Source",on:true},{id:"email",label:"Email",on:false},{id:"phone",label:"Phone",on:false},{id:"created",label:"Created",on:true}];
+const DEFAULT_COLS=[
+  {id:"name",label:"Name",on:true,system:true},
+  {id:"company",label:"Company",on:true,system:false},
+  {id:"stage",label:"Stage",on:true,system:false},
+  {id:"value",label:"Value",on:true,system:false},
+  {id:"assignee",label:"Assignee",on:true,system:false},
+  {id:"source",label:"Source",on:true,system:false},
+  {id:"email",label:"Email",on:false,system:false},
+  {id:"phone",label:"Phone",on:false,system:false},
+  {id:"created",label:"Created",on:true,system:false}
+];
 
 function LeadsTable({leads,stages,profiles,customFields,dispatch}){
   const [showColPicker,setShowColPicker]=useState(false);
-  const [cols,setCols]=useState(()=>{const cf=(customFields||[]).map(f=>({id:"cf_"+f.id,label:f.name,on:false,cfId:f.id}));return[...DEFAULT_COLS,...cf];});
+  const [cols,setCols]=useState(()=>{
+    const cf=(customFields||[]).map(f=>({id:"cf_"+f.id,label:f.name,on:false,system:false,cfId:f.id}));
+    return[...DEFAULT_COLS,...cf];
+  });
 
   useEffect(()=>{
-    setCols(prev=>{const existing=prev.map(c=>c.id);const cf=(customFields||[]).filter(f=>!existing.includes("cf_"+f.id)).map(f=>({id:"cf_"+f.id,label:f.name,on:false,cfId:f.id}));return[...prev,...cf];});
+    setCols(prev=>{
+      const existing=prev.map(c=>c.id);
+      const cf=(customFields||[]).filter(f=>!existing.includes("cf_"+f.id)).map(f=>({id:"cf_"+f.id,label:f.name,on:false,system:false,cfId:f.id}));
+      if(cf.length===0)return prev;
+      return[...prev,...cf];
+    });
   },[customFields]);
 
   const toggleCol=(id)=>setCols(p=>p.map(c=>c.id===id&&!c.system?{...c,on:!c.on}:c));
@@ -255,7 +343,7 @@ function LeadsTable({leads,stages,profiles,customFields,dispatch}){
 
   const getCellContent=(col,l)=>{
     const st=stages.find(s=>s.id===l.stage_id);
-    const as=profiles.find(p=>p.id===l.assignee_id);
+    const as=(profiles||[]).find(p=>p.id===l.assignee_id);
     switch(col.id){
       case "name":return <><div style={{fontWeight:600}}>{l.name}</div></>;
       case "company":return <span style={{color:"#475569"}}>{l.company||"—"}</span>;
@@ -286,29 +374,53 @@ function LeadsTable({leads,stages,profiles,customFields,dispatch}){
         </div>
       </div>}
     </div>
-    <div style={{overflowX:"auto",borderRadius:12,border:"1px solid #e2e8f0"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:14}}><thead><tr style={{background:"#f8fafc"}}>
-      {activeCols.map(c=><th key={c.id} style={{textAlign:"left",padding:"10px 14px",fontWeight:600,color:"#64748b",fontSize:12,textTransform:"uppercase",letterSpacing:.5,whiteSpace:"nowrap"}}>{c.label}</th>)}
-    </tr></thead><tbody>
-      {leads.map(l=><tr key={l.id} onClick={()=>dispatch({type:"SET_SEL",p:l})} style={{cursor:"pointer",borderTop:"1px solid #f1f5f9"}} onMouseEnter={e=>e.currentTarget.style.background="#f8fafc"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-        {activeCols.map(c=><td key={c.id} style={{padding:"10px 14px"}}>{getCellContent(c,l)}</td>)}
-      </tr>)}
-      {leads.length===0&&<tr><td colSpan={activeCols.length} style={{textAlign:"center",padding:40,color:"#94a3b8"}}>No leads found.</td></tr>}
-    </tbody></table></div>
+    <div style={{overflowX:"auto",borderRadius:12,border:"1px solid #e2e8f0"}}>
+      <table style={{width:"100%",borderCollapse:"collapse",fontSize:14}}>
+        <thead><tr style={{background:"#f8fafc"}}>
+          {activeCols.map(c=><th key={c.id} style={{textAlign:"left",padding:"10px 14px",fontWeight:600,color:"#64748b",fontSize:12,textTransform:"uppercase",letterSpacing:.5,whiteSpace:"nowrap"}}>{c.label}</th>)}
+        </tr></thead>
+        <tbody>
+          {leads.map(l=><tr key={l.id} onClick={()=>dispatch({type:"SET_SEL",p:l})} style={{cursor:"pointer",borderTop:"1px solid #f1f5f9"}} onMouseEnter={e=>e.currentTarget.style.background="#f8fafc"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+            {activeCols.map(c=><td key={c.id} style={{padding:"10px 14px"}}>{getCellContent(c,l)}</td>)}
+          </tr>)}
+          {leads.length===0&&<tr><td colSpan={activeCols.length} style={{textAlign:"center",padding:40,color:"#94a3b8"}}>No leads found.</td></tr>}
+        </tbody>
+      </table>
+    </div>
   </div>);
 }
 
-/* ───── Pipeline / Kanban ───── */
 function PipelineView({leads,stages,dispatch}){
-  return(<div style={{display:"flex",gap:12,overflowX:"auto",paddingBottom:12}}>{stages.filter(s=>s.name!=="Lost").map(stage=>{const sl=leads.filter(l=>l.stage_id===stage.id);const tot=sl.reduce((a,l)=>a+(l.value||0),0);return(<div key={stage.id} style={{minWidth:240,flex:"1 0 240px",background:"#f8fafc",borderRadius:12,padding:12}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}><div style={{display:"flex",alignItems:"center",gap:6}}><div style={{width:10,height:10,borderRadius:99,background:stage.color}}/><span style={{fontWeight:700,fontSize:13}}>{stage.name}</span><span style={{background:"#e2e8f0",borderRadius:99,padding:"1px 8px",fontSize:11,fontWeight:600}}>{sl.length}</span></div><span style={{fontSize:12,color:"#64748b",fontWeight:600}}>{fmt$(tot)}</span></div>{sl.map(l=>(<div key={l.id} onClick={()=>dispatch({type:"SET_SEL",p:l})} style={{background:"#fff",borderRadius:10,padding:12,cursor:"pointer",border:"1px solid #e2e8f0",marginBottom:8}} onMouseEnter={e=>e.currentTarget.style.boxShadow="0 2px 8px rgba(0,0,0,.08)"} onMouseLeave={e=>e.currentTarget.style.boxShadow="none"}><div style={{fontWeight:600,fontSize:13,marginBottom:2}}>{l.name}</div><div style={{fontSize:12,color:"#94a3b8",marginBottom:6}}>{l.company}</div><span style={{fontSize:13,fontWeight:700,color:"#334155"}}>{fmt$(l.value)}</span></div>))}</div>);})}</div>);
+  return(<div style={{display:"flex",gap:12,overflowX:"auto",paddingBottom:12}}>
+    {stages.filter(s=>s.name!=="Lost").map(stage=>{
+      const sl=leads.filter(l=>l.stage_id===stage.id);
+      const tot=sl.reduce((a,l)=>a+(l.value||0),0);
+      return(<div key={stage.id} style={{minWidth:240,flex:"1 0 240px",background:"#f8fafc",borderRadius:12,padding:12}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+          <div style={{display:"flex",alignItems:"center",gap:6}}>
+            <div style={{width:10,height:10,borderRadius:99,background:stage.color}}/>
+            <span style={{fontWeight:700,fontSize:13}}>{stage.name}</span>
+            <span style={{background:"#e2e8f0",borderRadius:99,padding:"1px 8px",fontSize:11,fontWeight:600}}>{sl.length}</span>
+          </div>
+          <span style={{fontSize:12,color:"#64748b",fontWeight:600}}>{fmt$(tot)}</span>
+        </div>
+        {sl.map(l=>(<div key={l.id} onClick={()=>dispatch({type:"SET_SEL",p:l})} style={{background:"#fff",borderRadius:10,padding:12,cursor:"pointer",border:"1px solid #e2e8f0",marginBottom:8}} onMouseEnter={e=>e.currentTarget.style.boxShadow="0 2px 8px rgba(0,0,0,.08)"} onMouseLeave={e=>e.currentTarget.style.boxShadow="none"}>
+          <div style={{fontWeight:600,fontSize:13,marginBottom:2}}>{l.name}</div>
+          <div style={{fontSize:12,color:"#94a3b8",marginBottom:6}}>{l.company}</div>
+          <span style={{fontSize:13,fontWeight:700,color:"#334155"}}>{fmt$(l.value)}</span>
+        </div>))}
+      </div>);
+    })}
+  </div>);
 }
 
-/* ───── Calendar View ───── */
-function CalendarView({leads,profiles}){
+function CalendarView({leads}){
   const [month,setMonth]=useState(()=>{const d=new Date();return new Date(d.getFullYear(),d.getMonth(),1);});
   const [allTasks,setAllTasks]=useState([]);
-  useEffect(()=>{supabase.from("tasks").select("*,leads(name)").order("due_date").then(({data})=>setAllTasks(data||[]));},[]);
+  useEffect(()=>{supabase.from("tasks").select("*").order("due_date").then(({data})=>setAllTasks(data||[]));},[]);
 
-  const year=month.getFullYear(),mo=month.getMonth();
+  const year=month.getFullYear();
+  const mo=month.getMonth();
   const firstDay=new Date(year,mo,1).getDay();
   const daysInMonth=new Date(year,mo+1,0).getDate();
   const days=[];
@@ -330,56 +442,76 @@ function CalendarView({leads,profiles}){
         const dayTasks=day?allTasks.filter(t=>t.due_date&&isSameDay(t.due_date,day)):[];
         const isToday=day&&isSameDay(day,today);
         return <div key={i} style={{minHeight:80,padding:4,background:isToday?"#eef2ff":"#fff",verticalAlign:"top"}}>
-          {day&&<><div style={{fontSize:12,fontWeight:isToday?700:400,color:isToday?"#6366f1":"#64748b",marginBottom:2,textAlign:"right",paddingRight:4}}>{day.getDate()}</div>
-          {dayTasks.slice(0,3).map(t=><div key={t.id} style={{fontSize:10,padding:"2px 4px",borderRadius:4,marginBottom:2,background:t.is_done?"#dcfce7":isOverdue(t.due_date)?"#fee2e2":"#e0e7ff",color:t.is_done?"#16a34a":isOverdue(t.due_date)?"#dc2626":"#4338ca",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{t.is_done?"✓ ":""}{t.text}</div>)}
-          {dayTasks.length>3&&<div style={{fontSize:10,color:"#94a3b8",paddingLeft:4}}>+{dayTasks.length-3} more</div>}</>}
+          {day&&<>
+            <div style={{fontSize:12,fontWeight:isToday?700:400,color:isToday?"#6366f1":"#64748b",marginBottom:2,textAlign:"right",paddingRight:4}}>{day.getDate()}</div>
+            {dayTasks.slice(0,3).map(t=><div key={t.id} style={{fontSize:10,padding:"2px 4px",borderRadius:4,marginBottom:2,background:t.is_done?"#dcfce7":isOverdue(t.due_date)?"#fee2e2":"#e0e7ff",color:t.is_done?"#16a34a":isOverdue(t.due_date)?"#dc2626":"#4338ca",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{t.is_done?"✓ ":""}{t.text}</div>)}
+            {dayTasks.length>3&&<div style={{fontSize:10,color:"#94a3b8",paddingLeft:4}}>+{dayTasks.length-3} more</div>}
+          </>}
         </div>;
       })}
     </div>
   </div>);
 }
 
-/* ───── Dashboard ───── */
 function DashboardView({leads,stages}){
-  const total=leads.length;const totalVal=leads.reduce((a,l)=>a+(l.value||0),0);
-  const wonStage=stages.find(s=>s.name==="Won");const wonLeads=wonStage?leads.filter(l=>l.stage_id===wonStage.id):[];
-  const wonVal=wonLeads.reduce((a,l)=>a+(l.value||0),0);const conv=total>0?((wonLeads.length/total)*100).toFixed(1):0;
+  const total=leads.length;
+  const totalVal=leads.reduce((a,l)=>a+(l.value||0),0);
+  const wonStage=stages.find(s=>s.name==="Won");
+  const wonLeads=wonStage?leads.filter(l=>l.stage_id===wonStage.id):[];
+  const wonVal=wonLeads.reduce((a,l)=>a+(l.value||0),0);
+  const conv=total>0?((wonLeads.length/total)*100).toFixed(1):0;
   const bySource={};leads.forEach(l=>{bySource[l.source||"Unknown"]=(bySource[l.source||"Unknown"]||0)+1;});
-  const srcEntries=Object.entries(bySource).sort((a,b)=>b[1]-a[1]);const maxSrc=srcEntries[0]?.[1]||1;
+  const srcEntries=Object.entries(bySource).sort((a,b)=>b[1]-a[1]);
+  const maxSrc=srcEntries[0]?.[1]||1;
   const activeStages=stages.filter(s=>s.name!=="Won"&&s.name!=="Lost");
   const cards=[{label:"Total Leads",value:total,color:"#6366f1"},{label:"Pipeline Value",value:fmt$(totalVal),color:"#3b82f6"},{label:"Won Revenue",value:fmt$(wonVal),color:"#10b981"},{label:"Conversion",value:conv+"%",color:"#f59e0b"}];
   return(<div>
-    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(160px, 1fr))",gap:12,marginBottom:20}}>{cards.map(c=><div key={c.label} style={{background:"#fff",borderRadius:12,padding:16,border:"1px solid #e2e8f0"}}><div style={{fontSize:12,color:"#94a3b8",fontWeight:600,marginBottom:4}}>{c.label}</div><div style={{fontSize:24,fontWeight:800,color:c.color}}>{c.value}</div></div>)}</div>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(160px, 1fr))",gap:12,marginBottom:20}}>
+      {cards.map(c=><div key={c.label} style={{background:"#fff",borderRadius:12,padding:16,border:"1px solid #e2e8f0"}}><div style={{fontSize:12,color:"#94a3b8",fontWeight:600,marginBottom:4}}>{c.label}</div><div style={{fontSize:24,fontWeight:800,color:c.color}}>{c.value}</div></div>)}
+    </div>
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
-      <div style={{background:"#fff",borderRadius:12,padding:16,border:"1px solid #e2e8f0"}}><div style={{fontSize:13,fontWeight:700,marginBottom:12}}>Pipeline Stages</div>{activeStages.map(s=>{const c=leads.filter(l=>l.stage_id===s.id).length;const pct=total>0?(c/total)*100:0;return(<div key={s.id} style={{marginBottom:10}}><div style={{display:"flex",justifyContent:"space-between",fontSize:12,marginBottom:3}}><span style={{fontWeight:600}}>{s.name}</span><span style={{color:"#64748b"}}>{c}</span></div><div style={{height:8,background:"#f1f5f9",borderRadius:99}}><div style={{height:"100%",borderRadius:99,background:s.color,width:pct+"%"}}/></div></div>);})}</div>
-      <div style={{background:"#fff",borderRadius:12,padding:16,border:"1px solid #e2e8f0"}}><div style={{fontSize:13,fontWeight:700,marginBottom:12}}>Lead Sources</div>{srcEntries.map(([src,cnt])=>(<div key={src} style={{marginBottom:10}}><div style={{display:"flex",justifyContent:"space-between",fontSize:12,marginBottom:3}}><span style={{fontWeight:600}}>{src}</span><span style={{color:"#64748b"}}>{cnt}</span></div><div style={{height:8,background:"#f1f5f9",borderRadius:99}}><div style={{height:"100%",borderRadius:99,background:"#6366f1",width:((cnt/maxSrc)*100)+"%"}}/></div></div>))}</div>
+      <div style={{background:"#fff",borderRadius:12,padding:16,border:"1px solid #e2e8f0"}}>
+        <div style={{fontSize:13,fontWeight:700,marginBottom:12}}>Pipeline Stages</div>
+        {activeStages.map(s=>{const c=leads.filter(l=>l.stage_id===s.id).length;const pct=total>0?(c/total)*100:0;return(
+          <div key={s.id} style={{marginBottom:10}}><div style={{display:"flex",justifyContent:"space-between",fontSize:12,marginBottom:3}}><span style={{fontWeight:600}}>{s.name}</span><span style={{color:"#64748b"}}>{c}</span></div><div style={{height:8,background:"#f1f5f9",borderRadius:99}}><div style={{height:"100%",borderRadius:99,background:s.color,width:pct+"%"}}/></div></div>);})}
+      </div>
+      <div style={{background:"#fff",borderRadius:12,padding:16,border:"1px solid #e2e8f0"}}>
+        <div style={{fontSize:13,fontWeight:700,marginBottom:12}}>Lead Sources</div>
+        {srcEntries.map(([src,cnt])=>(<div key={src} style={{marginBottom:10}}><div style={{display:"flex",justifyContent:"space-between",fontSize:12,marginBottom:3}}><span style={{fontWeight:600}}>{src}</span><span style={{color:"#64748b"}}>{cnt}</span></div><div style={{height:8,background:"#f1f5f9",borderRadius:99}}><div style={{height:"100%",borderRadius:99,background:"#6366f1",width:((cnt/maxSrc)*100)+"%"}}/></div></div>))}
+      </div>
     </div>
   </div>);
 }
 
-/* ───── Settings ───── */
 function SettingsView({stages,customFields,dispatch,profile,profiles}){
-  const [ns,setNS]=useState({name:"",color:"#6366f1"});const [nf,setNF]=useState({name:"",type:"text",options:""});
+  const [ns,setNS]=useState({name:"",color:"#6366f1"});
+  const [nf,setNF]=useState({name:"",type:"text",options:""});
   const isAdmin=profile?.role==="admin";
   const colors=["#6366f1","#3b82f6","#10b981","#f59e0b","#ec4899","#8b5cf6","#ef4444","#14b8a6","#f97316"];
+
   const addStage=async()=>{if(!ns.name||!isAdmin)return;const{data}=await supabase.from("stages").insert({name:ns.name,color:ns.color,position:stages.length}).select().single();if(data)dispatch({type:"SET_STAGES",p:[...stages,data]});setNS({name:"",color:"#6366f1"});};
   const delStage=async(id)=>{const st=stages.find(s=>s.id===id);if(st?.is_system||!isAdmin)return;await supabase.from("stages").delete().eq("id",id);dispatch({type:"SET_STAGES",p:stages.filter(s=>s.id!==id)});};
   const addField=async()=>{if(!nf.name||!isAdmin)return;const opts=nf.type==="select"?nf.options.split(",").map(o=>o.trim()).filter(Boolean):[];const{data}=await supabase.from("custom_fields").insert({name:nf.name,field_type:nf.type,options:opts,position:customFields.length}).select().single();if(data)dispatch({type:"SET_CF",p:[...customFields,data]});setNF({name:"",type:"text",options:""});};
   const delField=async(id)=>{if(!isAdmin)return;await supabase.from("custom_fields").delete().eq("id",id);dispatch({type:"SET_CF",p:customFields.filter(f=>f.id!==id)});};
-  const changeRole=async(uid,role)=>{await supabase.from("profiles").update({role}).eq("id",uid);};
+  const changeRole=async(uid,role)=>{await supabase.from("profiles").update({role:role}).eq("id",uid);};
 
   if(!isAdmin)return <div style={{padding:40,textAlign:"center",color:"#94a3b8"}}>Only admins can manage settings. Your role: <Badge color="#6366f1">{profile?.role}</Badge></div>;
 
   return(<div style={{maxWidth:700}}>
     <h3 style={{fontSize:16,fontWeight:700,marginBottom:16}}>Pipeline Stages</h3>
-    <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>{stages.map(s=><div key={s.id} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 12px",background:"#f8fafc",borderRadius:10}}><div style={{width:16,height:16,borderRadius:99,background:s.color}}/><span style={{flex:1,fontWeight:600,fontSize:14}}>{s.name}</span>{!s.is_system&&<button onClick={()=>delStage(s.id)} style={{background:"none",border:"none",cursor:"pointer",color:"#cbd5e1"}}>{IC.trash}</button>}</div>)}</div>
+    <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>
+      {stages.map(s=><div key={s.id} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 12px",background:"#f8fafc",borderRadius:10}}><div style={{width:16,height:16,borderRadius:99,background:s.color}}/><span style={{flex:1,fontWeight:600,fontSize:14}}>{s.name}</span>{!s.is_system&&<button onClick={()=>delStage(s.id)} style={{background:"none",border:"none",cursor:"pointer",color:"#cbd5e1"}}>{IC.trash}</button>}</div>)}
+    </div>
     <div style={{display:"flex",gap:8,alignItems:"flex-end",marginBottom:32}}>
       <Inp label="Stage Name" value={ns.name} onChange={v=>setNS(p=>({...p,name:v}))} placeholder="e.g. Discovery"/>
       <div style={{marginBottom:12}}><label style={{fontSize:12,fontWeight:600,color:"#64748b",marginBottom:4,display:"block"}}>Color</label><div style={{display:"flex",gap:4}}>{colors.map(c=><div key={c} onClick={()=>setNS(p=>({...p,color:c}))} style={{width:24,height:24,borderRadius:6,background:c,cursor:"pointer",border:ns.color===c?"2px solid #1e293b":"2px solid transparent"}}/>)}</div></div>
       <Btn onClick={addStage} style={{marginBottom:12}}>{IC.plus} Add</Btn>
     </div>
+
     <h3 style={{fontSize:16,fontWeight:700,marginBottom:16}}>Custom Fields</h3>
-    <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>{customFields.map(f=><div key={f.id} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 12px",background:"#f8fafc",borderRadius:10}}><Badge color="#6366f1">{f.field_type}</Badge><span style={{flex:1,fontWeight:600,fontSize:14}}>{f.name}</span><button onClick={()=>delField(f.id)} style={{background:"none",border:"none",cursor:"pointer",color:"#cbd5e1"}}>{IC.trash}</button></div>)}</div>
+    <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>
+      {customFields.map(f=><div key={f.id} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 12px",background:"#f8fafc",borderRadius:10}}><Badge color="#6366f1">{f.field_type}</Badge><span style={{flex:1,fontWeight:600,fontSize:14}}>{f.name}</span><button onClick={()=>delField(f.id)} style={{background:"none",border:"none",cursor:"pointer",color:"#cbd5e1"}}>{IC.trash}</button></div>)}
+    </div>
     <div style={{display:"flex",gap:8,alignItems:"flex-end",flexWrap:"wrap"}}>
       <Inp label="Field Name" value={nf.name} onChange={v=>setNF(p=>({...p,name:v}))} placeholder="e.g. Region"/>
       <Inp label="Type" value={nf.type} onChange={v=>setNF(p=>({...p,type:v}))} type="select" options={["text","number","select"]}/>
@@ -389,7 +521,7 @@ function SettingsView({stages,customFields,dispatch,profile,profiles}){
 
     <h3 style={{fontSize:16,fontWeight:700,marginTop:32,marginBottom:16}}>Team Members & Roles</h3>
     <div style={{display:"flex",flexDirection:"column",gap:8}}>
-      {profiles.map(p=><div key={p.id} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 14px",background:"#f8fafc",borderRadius:10}}>
+      {(profiles||[]).map(p=><div key={p.id} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 14px",background:"#f8fafc",borderRadius:10}}>
         <div style={{width:32,height:32,borderRadius:99,background:"linear-gradient(135deg,#6366f1,#8b5cf6)",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:13,fontWeight:700}}>{(p.full_name||p.email||"?")[0].toUpperCase()}</div>
         <div style={{flex:1}}><div style={{fontWeight:600,fontSize:14}}>{p.full_name||"Unnamed"}</div><div style={{fontSize:12,color:"#94a3b8"}}>{p.email}</div></div>
         <select value={p.role} onChange={e=>changeRole(p.id,e.target.value)} style={{padding:"4px 8px",borderRadius:6,border:"1px solid #e2e8f0",fontSize:12}} disabled={p.id===profile.id}><option value="admin">Admin</option><option value="manager">Manager</option><option value="member">Member</option></select>
@@ -398,11 +530,12 @@ function SettingsView({stages,customFields,dispatch,profile,profiles}){
   </div>);
 }
 
-/* ═══════ MAIN APP ═══════ */
 export default function CRMDashboard(){
   const [state,dispatch]=useReducer(reducer,{page:"leads",leads:[],stages:[],customFields:[],search:"",filters:{},view:"table",modal:null,sel:null,fbar:false,loading:true});
   const {page,leads,stages,customFields,search,filters,view,modal,sel,fbar,loading}=state;
-  const [user,setUser]=useState(null);const [profile,setProfile]=useState(null);const [profiles,setProfiles]=useState([]);
+  const [user,setUser]=useState(null);
+  const [profile,setProfile]=useState(null);
+  const [profiles,setProfiles]=useState([]);
   const router=useRouter();
 
   useEffect(()=>{
@@ -417,12 +550,13 @@ export default function CRMDashboard(){
         supabase.from("leads").select("*").order("created_at",{ascending:false}),
         supabase.from("profiles").select("*"),
       ]);
-      setProfile(profRes.data);setProfiles(allProf.data||[]);
+      setProfile(profRes.data);
+      setProfiles(allProf.data||[]);
       dispatch({type:"INIT",payload:{stages:stagesRes.data||[],customFields:cfRes.data||[],leads:leadsRes.data||[]}});
     };
     load();
-    const{data:{subscription}}=supabase.auth.onAuthStateChange((_,session)=>{if(!session)router.push("/");});
-    return()=>subscription.unsubscribe();
+    const{data:{subscription}}=supabase.auth.onAuthStateChange(function(_,session){if(!session)router.push("/");});
+    return function(){subscription.unsubscribe();};
   },[router]);
 
   const saveLead=async(f)=>{
@@ -462,7 +596,9 @@ export default function CRMDashboard(){
           <div style={{width:32,height:32,borderRadius:10,background:"linear-gradient(135deg,#6366f1,#8b5cf6)",display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:16}}>🐝</span></div>
           <div><div style={{fontWeight:800,fontSize:15,letterSpacing:-.3}}>BeeSolver</div><div style={{fontSize:11,color:"#94a3b8"}}>CRM</div></div>
         </div>
-        <nav style={{flex:1,padding:"8px 10px"}}>{nav.map(n=><div key={n.id} onClick={()=>dispatch({type:"SET_PAGE",p:n.id})} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:10,cursor:"pointer",marginBottom:2,fontWeight:600,fontSize:14,background:page===n.id?"#f1f5f9":"transparent",color:page===n.id?"#6366f1":"#64748b"}}>{n.icon} {n.label}</div>)}</nav>
+        <nav style={{flex:1,padding:"8px 10px"}}>
+          {nav.map(n=><div key={n.id} onClick={()=>dispatch({type:"SET_PAGE",p:n.id})} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:10,cursor:"pointer",marginBottom:2,fontWeight:600,fontSize:14,background:page===n.id?"#f1f5f9":"transparent",color:page===n.id?"#6366f1":"#64748b"}}>{n.icon} {n.label}</div>)}
+        </nav>
         <div style={{padding:14,borderTop:"1px solid #f1f5f9"}}>
           <div style={{fontSize:12,fontWeight:600,color:"#334155",marginBottom:2}}>{profile?.full_name}</div>
           <div style={{fontSize:11,color:"#94a3b8",marginBottom:8}}>{profile?.role}</div>
@@ -485,7 +621,7 @@ export default function CRMDashboard(){
           <div style={{padding:"10px 20px",background:"#fff",borderBottom:"1px solid #e2e8f0",display:"flex",gap:12,alignItems:"center",flexShrink:0}}>
             <select value={filters.stage||""} onChange={e=>dispatch({type:"SET_FILTER",p:{stage:e.target.value}})} style={{padding:"6px 10px",borderRadius:8,border:"1px solid #e2e8f0",fontSize:13}}><option value="">All Stages</option>{stages.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select>
             <select value={filters.source||""} onChange={e=>dispatch({type:"SET_FILTER",p:{source:e.target.value}})} style={{padding:"6px 10px",borderRadius:8,border:"1px solid #e2e8f0",fontSize:13}}><option value="">All Sources</option>{sources.map(s=><option key={s} value={s}>{s}</option>)}</select>
-            <select value={filters.assignee||""} onChange={e=>dispatch({type:"SET_FILTER",p:{assignee:e.target.value}})} style={{padding:"6px 10px",borderRadius:8,border:"1px solid #e2e8f0",fontSize:13}}><option value="">All Assignees</option>{profiles.map(p=><option key={p.id} value={p.id}>{p.full_name||p.email}</option>)}</select>
+            <select value={filters.assignee||""} onChange={e=>dispatch({type:"SET_FILTER",p:{assignee:e.target.value}})} style={{padding:"6px 10px",borderRadius:8,border:"1px solid #e2e8f0",fontSize:13}}><option value="">All Assignees</option>{(profiles||[]).map(p=><option key={p.id} value={p.id}>{p.full_name||p.email}</option>)}</select>
             {activeF>0&&<Btn v="ghost" sz="sm" onClick={()=>dispatch({type:"CLR_FILTERS"})}>{IC.x} Clear</Btn>}
             <span style={{fontSize:12,color:"#94a3b8"}}>{filtered.length} result{filtered.length!==1?"s":""}</span>
           </div>
@@ -494,7 +630,7 @@ export default function CRMDashboard(){
           {page==="dashboard"&&<DashboardView leads={leads} stages={stages}/>}
           {page==="leads"&&(view==="table"?<LeadsTable leads={filtered} stages={stages} profiles={profiles} customFields={customFields} dispatch={dispatch}/>:<PipelineView leads={filtered} stages={stages} dispatch={dispatch}/>)}
           {page==="pipeline"&&<PipelineView leads={filtered} stages={stages} dispatch={dispatch}/>}
-          {page==="calendar"&&<CalendarView leads={leads} profiles={profiles}/>}
+          {page==="calendar"&&<CalendarView leads={leads}/>}
           {page==="settings"&&<SettingsView stages={stages} customFields={customFields} dispatch={dispatch} profile={profile} profiles={profiles}/>}
         </div>
       </div>
