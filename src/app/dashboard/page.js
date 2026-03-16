@@ -330,9 +330,7 @@ export default function CRMDashboard(){
           {page==="leads"&&(view==="table"?<LeadsTable leads={filtered} stages={stages} profiles={profiles} customFields={customFields} dispatch={dispatch}/>:<PipelineView leads={filtered} stages={stages} dispatch={dispatch}/>)}
           {page==="pipeline"&&<PipelineView leads={filtered} stages={stages} dispatch={dispatch}/>}
           {page==="calendar"&&<CalendarView/>}
-  const handleRoleChange=(uid,role)=>{setProfiles(p=>p.map(x=>x.id===uid?{...x,role}:x));};
-
-          {page==="settings"&&<SettingsView stages={stages} customFields={customFields} dispatch={dispatch} profile={profile} profiles={profiles} sources={sources} onSourcesChange={handleSourcesChange} onRoleChange={handleRoleChange}/>}
+          {page==="settings"&&<SettingsView stages={stages} customFields={customFields} dispatch={dispatch} profile={profile} profiles={profiles} sources={sources} onSourcesChange={handleSourcesChange} onRoleChange={function(uid,role){setProfiles(function(p){return p.map(function(x){return x.id===uid?Object.assign({},x,{role:role}):x;});})}}/>}
         </div>
       </div>
       {selLead&&<LeadDetail lead={selLead} stages={stages} customFields={customFields} profiles={profiles} dispatch={dispatch} onClose={()=>dispatch({type:"SET_SEL",p:null})} user={user} sources={sources}/>}
