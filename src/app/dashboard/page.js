@@ -62,31 +62,28 @@ function Btn({children,v="primary",sz="md",onClick,style:xs,disabled}){const b={
 function Inp({label,value,onChange,type="text",placeholder,options,required}){const s={width:"100%",padding:"8px 12px",borderRadius:8,border:"1px solid #e2e8f0",fontSize:14,outline:"none",background:"#fff",boxSizing:"border-box"};return(<div style={{marginBottom:12}}>{label&&<label style={{fontSize:12,fontWeight:600,color:"#64748b",marginBottom:4,display:"block"}}>{label}{required&&<span style={{color:"#ef4444"}}> *</span>}</label>}{type==="select"?<select value={value} onChange={e=>onChange(e.target.value)} style={s}><option value="">Select...</option>{(options||[]).map(o=><option key={typeof o==="object"?o.value:o} value={typeof o==="object"?o.value:o}>{typeof o==="object"?o.label:o}</option>)}</select>:type==="textarea"?<textarea value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} rows={3} style={{...s,resize:"vertical"}}/>:<input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} style={s}/>}</div>);}
 function Modal({title,onClose,children,width=520}){return(<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.4)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:20}} onClick={onClose}><div onClick={e=>e.stopPropagation()} style={{background:"#fff",borderRadius:16,width:"100%",maxWidth:width,maxHeight:"90vh",overflow:"auto",boxShadow:"0 25px 50px -12px rgba(0,0,0,.25)"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"16px 20px",borderBottom:"1px solid #f1f5f9"}}><h3 style={{margin:0,fontSize:16,fontWeight:700}}>{title}</h3><button onClick={onClose} style={{background:"none",border:"none",cursor:"pointer",color:"#94a3b8",padding:4}}>{IC.x}</button></div><div style={{padding:20}}>{children}</div></div></div>);}
 
-function checkDuplicates(name,email,company,leads,excludeId){const dupes=[];const n=(name||"").toLowerCase().trim();const e=(email||"").toLowerCase().trim();const c=(company||"").toLowerCase().trim();leads.forEach(l=>{if(l.id===excludeId)return;let score=0;if(n&&(l.name||"").toLowerCase().trim()===n)score+=3;else if(n&&(l.name||"").toLowerCase().includes(n))score+=1;if(e&&e===(l.email||"").toLowerCase().trim())score+=4;if(c&&c===(l.company||"").toLowerCase().trim())score+=1;if(score>=3)dupes.push({lead:l,score});});return dupes.sort((a,b)=>b.score-a.score);}
+function checkDuplicates(name,leads,excludeId){const dupes=[];const n=(name||"").toLowerCase().trim();leads.forEach(l=>{if(l.id===excludeId)return;let score=0;if(n&&(l.name||"").toLowerCase().trim()===n)score+=3;else if(n.length>2&&(l.name||"").toLowerCase().includes(n))score+=2;if(score>=2)dupes.push({lead:l,score});});return dupes.sort((a,b)=>b.score-a.score);}
 
 async function logActivity(leadId,userId,action,details){try{await supabase.from("activities").insert({lead_id:leadId,user_id:userId,action:action,details:details||{}});}catch(e){}}
 
 function LeadForm({lead,stages,customFields,profiles,leads,sources,onSave,onClose}){
-  const [f,setF]=useState(lead||{name:"",email:"",phone:"",company:"",source:"",stage_id:stages[0]?.id||"",value:"",assignee_id:"",notes:"",custom_data:{}});
+  const [f,setF]=useState(lead||{name:"",source:"",stage_id:stages[0]?.id||"",value:"",assignee_id:"",notes:"",custom_data:{}});
   const [dupes,setDupes]=useState([]);
   const [err,setErr]=useState("");
-  const u=(k,v)=>{const nf={...f,[k]:v};setF(nf);setErr("");if(k==="name"||k==="email"||k==="company")setDupes(checkDuplicates(nf.name,nf.email,nf.company,leads||[],lead?.id));};
+  const u=(k,v)=>{const nf={...f,[k]:v};setF(nf);setErr("");if(k==="name")setDupes(checkDuplicates(nf.name,leads||[],lead?.id));};
   const uCF=(k,v)=>setF(p=>({...p,custom_data:{...p.custom_data,[k]:v}}));
   const profileOpts=(profiles||[]).map(p=>({value:p.id,label:p.full_name||p.email}));
   const stageOpts=(stages||[]).map(s=>({value:s.id,label:s.name}));
   const submit=()=>{if(!f.name.trim()){setErr("Name is required");return;}onSave({...f,value:Number(f.value)||0});};
   return(<>
-    {dupes.length>0&&<div style={{padding:"10px 14px",background:"#fef3c7",border:"1px solid #fbbf24",borderRadius:10,marginBottom:14,display:"flex",alignItems:"flex-start",gap:8}}><span style={{color:"#f59e0b",flexShrink:0,marginTop:2}}>{IC.warn}</span><div><div style={{fontSize:13,fontWeight:600,color:"#92400e"}}>Possible duplicate{dupes.length>1?"s":""} found:</div>{dupes.map(d=><div key={d.lead.id} style={{fontSize:12,color:"#92400e",marginTop:2}}>{d.lead.name}{d.lead.email?" — "+d.lead.email:""}{d.lead.company?" ("+d.lead.company+")":""}</div>)}</div></div>}
+    {dupes.length>0&&<div style={{padding:"10px 14px",background:"#fef3c7",border:"1px solid #fbbf24",borderRadius:10,marginBottom:14,display:"flex",alignItems:"flex-start",gap:8}}><span style={{color:"#f59e0b",flexShrink:0,marginTop:2}}>{IC.warn}</span><div><div style={{fontSize:13,fontWeight:600,color:"#92400e"}}>Possible duplicate{dupes.length>1?"s":""} found:</div>{dupes.map(d=><div key={d.lead.id} style={{fontSize:12,color:"#92400e",marginTop:2}}>{d.lead.name}{d.lead.source?" — "+d.lead.source:""}</div>)}</div></div>}
     {err&&<div style={{padding:"8px 12px",background:"#fee2e2",borderRadius:8,marginBottom:12,fontSize:13,color:"#dc2626"}}>{err}</div>}
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0 16px"}}>
       <Inp label="Full Name" required value={f.name} onChange={v=>u("name",v)} placeholder="John Doe"/>
-      <Inp label="Email" value={f.email} onChange={v=>u("email",v)} placeholder="john@example.com" type="email"/>
-      <Inp label="Phone" value={f.phone} onChange={v=>u("phone",v)} placeholder="+1 555-0000"/>
-      <Inp label="Company" value={f.company} onChange={v=>u("company",v)} placeholder="Acme Inc"/>
       <Inp label="Source" value={f.source} onChange={v=>u("source",v)} type="select" options={sources||DEFAULT_SOURCES}/>
       <Inp label="Stage" value={f.stage_id} onChange={v=>u("stage_id",v)} type="select" options={stageOpts}/>
       <Inp label="Deal Value ($)" value={f.value} onChange={v=>u("value",v)} type="number" placeholder="0"/>
-      <Inp label="Assignee" value={f.assignee_id} onChange={v=>u("assignee_id",v)} type="select" options={profileOpts}/>
+      <div style={{gridColumn:"1 / -1"}}><Inp label="Assignee" value={f.assignee_id} onChange={v=>u("assignee_id",v)} type="select" options={profileOpts}/></div>
     </div>
     {customFields&&customFields.length>0&&<><div style={{fontSize:12,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,margin:"8px 0"}}>Custom Fields</div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0 16px"}}>{customFields.map(cf=><Inp key={cf.id} label={cf.name} value={f.custom_data?.[cf.id]||""} onChange={v=>uCF(cf.id,cf.field_type==="number"?Number(v):v)} type={cf.field_type==="select"?"select":cf.field_type==="number"?"number":"text"} options={cf.options}/>)}</div></>}
     <Inp label="Notes" value={f.notes} onChange={v=>u("notes",v)} type="textarea" placeholder="Any notes..."/>
@@ -121,7 +118,7 @@ function LeadDetail({lead,stages,customFields,profiles,dispatch,onClose,user,sou
       <div style={{display:"flex",gap:0,borderBottom:"1px solid #f1f5f9",flexShrink:0}}>{tabs.map(t=><button key={t.id} onClick={()=>setTab(t.id)} style={{padding:"10px 16px",fontSize:12,fontWeight:600,border:"none",background:"none",cursor:"pointer",color:tab===t.id?"#6366f1":"#94a3b8",borderBottom:tab===t.id?"2px solid #6366f1":"2px solid transparent"}}>{t.label}</button>)}</div>
       <div style={{padding:20,flex:1,overflow:"auto"}}>
         {tab==="details"&&<><div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap"}}><Badge color={stage?.color||"#6366f1"}>{stage?.name||"—"}</Badge><Badge color="#64748b">{fmt$(lead.value)}</Badge>{lead.source&&<Badge color="#64748b">{lead.source}</Badge>}</div>
-          <div style={{display:"grid",gap:12,fontSize:14}}>{[["Company",lead.company],["Email",lead.email],["Phone",lead.phone],["Assignee",assignee?.full_name],["Win Probability",getWinProb(stage?.name)+"%"],["Created",lead.created_at?fmtDate(lead.created_at):"—"],["Last Updated",lead.updated_at?fmtDate(lead.updated_at):"—"]].map(([k,v])=><div key={k} style={{display:"flex",justifyContent:"space-between"}}><span style={{color:"#94a3b8"}}>{k}</span><span style={{fontWeight:500}}>{v||"—"}</span></div>)}{(customFields||[]).map(cf=><div key={cf.id} style={{display:"flex",justifyContent:"space-between"}}><span style={{color:"#94a3b8"}}>{cf.name}</span><span style={{fontWeight:500}}>{lead.custom_data?.[cf.id]||"—"}</span></div>)}</div>
+          <div style={{display:"grid",gap:12,fontSize:14}}>{[["Assignee",assignee?.full_name],["Win Probability",getWinProb(stage?.name)+"%"],["Created",lead.created_at?fmtDate(lead.created_at):"—"],["Last Updated",lead.updated_at?fmtDate(lead.updated_at):"—"]].map(([k,v])=><div key={k} style={{display:"flex",justifyContent:"space-between"}}><span style={{color:"#94a3b8"}}>{k}</span><span style={{fontWeight:500}}>{v||"—"}</span></div>)}{(customFields||[]).map(cf=><div key={cf.id} style={{display:"flex",justifyContent:"space-between"}}><span style={{color:"#94a3b8"}}>{cf.name}</span><span style={{fontWeight:500}}>{lead.custom_data?.[cf.id]||"—"}</span></div>)}</div>
           {lead.notes&&<div style={{marginTop:16,padding:12,background:"#f8fafc",borderRadius:10,fontSize:13,color:"#475569"}}>{lead.notes}</div>}
           {isAdmin&&<div style={{marginTop:16}}><label style={{fontSize:12,fontWeight:600,color:"#64748b",display:"block",marginBottom:4}}>Assign to team member</label><select value={lead.assignee_id||""} onChange={e=>assignLead(e.target.value)} style={{padding:"8px 12px",borderRadius:8,border:"1px solid #e2e8f0",fontSize:14,width:"100%"}}><option value="">Unassigned</option>{(profiles||[]).map(p=><option key={p.id} value={p.id}>{p.full_name||p.email}</option>)}</select></div>}
           <div style={{marginTop:16,display:"flex",gap:6,flexWrap:"wrap",alignItems:"center"}}><span style={{fontSize:12,color:"#94a3b8",fontWeight:600}}>Move to:</span>{stages.filter(s=>s.id!==lead.stage_id).map(s=><Badge key={s.id} color={s.color} onClick={()=>moveStage(s.id)} style={{cursor:"pointer",fontSize:11}}>{s.name}</Badge>)}</div>
@@ -134,7 +131,7 @@ function LeadDetail({lead,stages,customFields,profiles,dispatch,onClose,user,sou
     </div>);
 }
 
-const DEFAULT_COLS=[{id:"name",label:"Name",on:true,system:true},{id:"score",label:"Score",on:true,system:false},{id:"company",label:"Company",on:true,system:false},{id:"stage",label:"Stage",on:true,system:false},{id:"value",label:"Value",on:true,system:false},{id:"assignee",label:"Assignee",on:true,system:false},{id:"source",label:"Source",on:true,system:false},{id:"email",label:"Email",on:false,system:false},{id:"phone",label:"Phone",on:false,system:false},{id:"age",label:"Age",on:false,system:false},{id:"created",label:"Created",on:true,system:false}];
+const DEFAULT_COLS=[{id:"name",label:"Name",on:true,system:true},{id:"score",label:"Score",on:true,system:false},{id:"stage",label:"Stage",on:true,system:false},{id:"value",label:"Value",on:true,system:false},{id:"assignee",label:"Assignee",on:true,system:false},{id:"source",label:"Source",on:true,system:false},{id:"age",label:"Age",on:false,system:false},{id:"created",label:"Created",on:true,system:false}];
 
 function LeadsTable({leads,stages,profiles,customFields,dispatch}){
   const [showColPicker,setShowColPicker]=useState(false);
@@ -143,16 +140,28 @@ function LeadsTable({leads,stages,profiles,customFields,dispatch}){
   const toggleCol=(id)=>setCols(p=>p.map(c=>c.id===id&&!c.system?{...c,on:!c.on}:c));
   const activeCols=cols.filter(c=>c.on);
   const getCellContent=(col,l)=>{const st=stages.find(s=>s.id===l.stage_id);const as=(profiles||[]).find(p=>p.id===l.assignee_id);const sc=getLeadScore(l,stages);
-    switch(col.id){case "name":return <><div style={{fontWeight:600}}>{l.name}</div>{isStale(l)&&<span style={{fontSize:10,color:"#f59e0b"}}>Stale</span>}</>;case "score":return <Badge color={sc.color}>{sc.label}</Badge>;case "company":return <span style={{color:"#475569"}}>{l.company||"—"}</span>;case "stage":return <Badge color={st?.color||"#6366f1"}>{st?.name||"—"}</Badge>;case "value":return <span style={{fontWeight:600}}>{fmt$(l.value)}</span>;case "assignee":return <span style={{color:"#64748b",fontSize:13}}>{as?.full_name||"—"}</span>;case "source":return <span style={{color:"#64748b"}}>{l.source||"—"}</span>;case "email":return <span style={{color:"#64748b",fontSize:13}}>{l.email||"—"}</span>;case "phone":return <span style={{color:"#64748b",fontSize:13}}>{l.phone||"—"}</span>;case "age":return <span style={{color:isStale(l)?"#f59e0b":"#94a3b8",fontSize:13}}>{daysSince(l.updated_at||l.created_at)}d</span>;case "created":return <span style={{color:"#94a3b8",fontSize:13}}>{l.created_at?fmtDate(l.created_at):"—"}</span>;default:if(col.cfId)return <span style={{color:"#475569",fontSize:13}}>{l.custom_data?.[col.cfId]||"—"}</span>;return "—";}};
+    switch(col.id){case "name":return <><div style={{fontWeight:600}}>{l.name}</div>{isStale(l)&&<span style={{fontSize:10,color:"#f59e0b"}}>Stale</span>}</>;case "score":return <Badge color={sc.color}>{sc.label}</Badge>;case "stage":return <Badge color={st?.color||"#6366f1"}>{st?.name||"—"}</Badge>;case "value":return <span style={{fontWeight:600}}>{fmt$(l.value)}</span>;case "assignee":return <span style={{color:"#64748b",fontSize:13}}>{as?.full_name||"—"}</span>;case "source":return <span style={{color:"#64748b"}}>{l.source||"—"}</span>;case "age":return <span style={{color:isStale(l)?"#f59e0b":"#94a3b8",fontSize:13}}>{daysSince(l.updated_at||l.created_at)}d</span>;case "created":return <span style={{color:"#94a3b8",fontSize:13}}>{l.created_at?fmtDate(l.created_at):"—"}</span>;default:if(col.cfId)return <span style={{color:"#475569",fontSize:13}}>{l.custom_data?.[col.cfId]||"—"}</span>;return "—";}};
   return(<div><div style={{display:"flex",justifyContent:"flex-end",marginBottom:8,position:"relative"}}><Btn v="ghost" sz="sm" onClick={()=>setShowColPicker(!showColPicker)}>{IC.gear} Columns</Btn>{showColPicker&&<div style={{position:"absolute",top:36,right:0,background:"#fff",border:"1px solid #e2e8f0",borderRadius:12,padding:12,boxShadow:"0 8px 24px rgba(0,0,0,0.12)",zIndex:50,width:220}}><div style={{fontSize:12,fontWeight:700,color:"#64748b",marginBottom:8}}>Show/Hide Columns</div>{cols.map(c=><label key={c.id} style={{display:"flex",alignItems:"center",gap:8,padding:"5px 4px",cursor:c.system?"default":"pointer",fontSize:13,color:c.system?"#94a3b8":"#334155"}}><input type="checkbox" checked={c.on} onChange={()=>toggleCol(c.id)} disabled={c.system} style={{accentColor:"#6366f1"}}/>{c.label}{c.system&&<span style={{fontSize:10,color:"#cbd5e1"}}>(required)</span>}</label>)}<div style={{borderTop:"1px solid #f1f5f9",marginTop:8,paddingTop:8}}><Btn v="ghost" sz="sm" onClick={()=>setShowColPicker(false)}>Done</Btn></div></div>}</div>
     <div style={{overflowX:"auto",borderRadius:12,border:"1px solid #e2e8f0"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:14}}><thead><tr style={{background:"#f8fafc"}}>{activeCols.map(c=><th key={c.id} style={{textAlign:"left",padding:"10px 14px",fontWeight:600,color:"#64748b",fontSize:12,textTransform:"uppercase",letterSpacing:.5,whiteSpace:"nowrap"}}>{c.label}</th>)}</tr></thead><tbody>{leads.map(l=><tr key={l.id} onClick={()=>dispatch({type:"SET_SEL",p:l})} style={{cursor:"pointer",borderTop:"1px solid #f1f5f9"}} onMouseEnter={e=>e.currentTarget.style.background="#f8fafc"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>{activeCols.map(c=><td key={c.id} style={{padding:"10px 14px"}}>{getCellContent(c,l)}</td>)}</tr>)}{leads.length===0&&<tr><td colSpan={activeCols.length} style={{textAlign:"center",padding:40,color:"#94a3b8"}}>No leads found.</td></tr>}</tbody></table></div></div>);
 }
 
-function PipelineView({leads,stages,dispatch}){return(<div style={{display:"flex",gap:12,overflowX:"auto",paddingBottom:12}}>{stages.filter(s=>s.name!=="Lost").map(stage=>{const sl=leads.filter(l=>l.stage_id===stage.id);const tot=sl.reduce((a,l)=>a+(l.value||0),0);return(<div key={stage.id} style={{minWidth:240,flex:"1 0 240px",background:"#f8fafc",borderRadius:12,padding:12}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}><div style={{display:"flex",alignItems:"center",gap:6}}><div style={{width:10,height:10,borderRadius:99,background:stage.color}}/><span style={{fontWeight:700,fontSize:13}}>{stage.name}</span><span style={{background:"#e2e8f0",borderRadius:99,padding:"1px 8px",fontSize:11,fontWeight:600}}>{sl.length}</span></div><span style={{fontSize:12,color:"#64748b",fontWeight:600}}>{fmt$(tot)}</span></div>{sl.map(l=>{const sc=getLeadScore(l,stages);return(<div key={l.id} onClick={()=>dispatch({type:"SET_SEL",p:l})} style={{background:"#fff",borderRadius:10,padding:12,cursor:"pointer",border:"1px solid #e2e8f0",marginBottom:8}} onMouseEnter={e=>e.currentTarget.style.boxShadow="0 2px 8px rgba(0,0,0,.08)"} onMouseLeave={e=>e.currentTarget.style.boxShadow="none"}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:2}}><span style={{fontWeight:600,fontSize:13}}>{l.name}</span><Badge color={sc.color} style={{fontSize:10}}>{sc.label}</Badge></div><div style={{fontSize:12,color:"#94a3b8",marginBottom:6}}>{l.company}</div><div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}><span style={{fontSize:13,fontWeight:700,color:"#334155"}}>{fmt$(l.value)}</span>{isStale(l)&&<span style={{fontSize:10,color:"#f59e0b"}}>Stale</span>}</div></div>);})}</div>);})}</div>);}
+function PipelineView({leads,stages,dispatch}){return(<div style={{display:"flex",gap:12,overflowX:"auto",paddingBottom:12}}>{stages.filter(s=>s.name!=="Lost").map(stage=>{const sl=leads.filter(l=>l.stage_id===stage.id);const tot=sl.reduce((a,l)=>a+(l.value||0),0);return(<div key={stage.id} style={{minWidth:240,flex:"1 0 240px",background:"#f8fafc",borderRadius:12,padding:12}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}><div style={{display:"flex",alignItems:"center",gap:6}}><div style={{width:10,height:10,borderRadius:99,background:stage.color}}/><span style={{fontWeight:700,fontSize:13}}>{stage.name}</span><span style={{background:"#e2e8f0",borderRadius:99,padding:"1px 8px",fontSize:11,fontWeight:600}}>{sl.length}</span></div><span style={{fontSize:12,color:"#64748b",fontWeight:600}}>{fmt$(tot)}</span></div>{sl.map(l=>{const sc=getLeadScore(l,stages);return(<div key={l.id} onClick={()=>dispatch({type:"SET_SEL",p:l})} style={{background:"#fff",borderRadius:10,padding:12,cursor:"pointer",border:"1px solid #e2e8f0",marginBottom:8}} onMouseEnter={e=>e.currentTarget.style.boxShadow="0 2px 8px rgba(0,0,0,.08)"} onMouseLeave={e=>e.currentTarget.style.boxShadow="none"}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}><span style={{fontWeight:600,fontSize:13}}>{l.name}</span><Badge color={sc.color} style={{fontSize:10}}>{sc.label}</Badge></div><div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}><span style={{fontSize:13,fontWeight:700,color:"#334155"}}>{fmt$(l.value)}</span>{isStale(l)&&<span style={{fontSize:10,color:"#f59e0b"}}>Stale</span>}</div></div>);})}</div>);})}</div>);}
 
 function CalendarView(){const [month,setMonth]=useState(()=>{const d=new Date();return new Date(d.getFullYear(),d.getMonth(),1);});const [allTasks,setAllTasks]=useState([]);useEffect(()=>{supabase.from("tasks").select("*").order("due_date").then(({data})=>setAllTasks(data||[]));},[]);const year=month.getFullYear();const mo=month.getMonth();const firstDay=new Date(year,mo,1).getDay();const daysInMonth=new Date(year,mo+1,0).getDate();const days=[];for(let i=0;i<firstDay;i++)days.push(null);for(let i=1;i<=daysInMonth;i++)days.push(new Date(year,mo,i));const prev=()=>setMonth(new Date(year,mo-1,1));const next=()=>setMonth(new Date(year,mo+1,1));const today=new Date();return(<div><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}><Btn v="secondary" sz="sm" onClick={prev}>← Prev</Btn><h3 style={{fontSize:16,fontWeight:700}}>{month.toLocaleDateString("en-US",{month:"long",year:"numeric"})}</h3><Btn v="secondary" sz="sm" onClick={next}>Next →</Btn></div><div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:1,background:"#e2e8f0",borderRadius:12,overflow:"hidden"}}>{["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(d=><div key={d} style={{padding:"8px",textAlign:"center",fontSize:12,fontWeight:600,color:"#64748b",background:"#f8fafc"}}>{d}</div>)}{days.map((day,i)=>{const dayTasks=day?allTasks.filter(t=>t.due_date&&isSameDay(t.due_date,day)):[];const isToday=day&&isSameDay(day,today);return <div key={i} style={{minHeight:80,padding:4,background:isToday?"#eef2ff":"#fff",verticalAlign:"top"}}>{day&&<><div style={{fontSize:12,fontWeight:isToday?700:400,color:isToday?"#6366f1":"#64748b",marginBottom:2,textAlign:"right",paddingRight:4}}>{day.getDate()}</div>{dayTasks.slice(0,3).map(t=><div key={t.id} style={{fontSize:10,padding:"2px 4px",borderRadius:4,marginBottom:2,background:t.is_done?"#dcfce7":isOverdue(t.due_date)?"#fee2e2":"#e0e7ff",color:t.is_done?"#16a34a":isOverdue(t.due_date)?"#dc2626":"#4338ca",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{t.is_done?"✓ ":""}{t.text}</div>)}{dayTasks.length>3&&<div style={{fontSize:10,color:"#94a3b8",paddingLeft:4}}>+{dayTasks.length-3} more</div>}</>}</div>;})}</div></div>);}
 
-function DashboardView({leads,stages}){
+function DashboardView({leads,stages,user,profiles}){
+  const [urgentTasks,setUrgentTasks]=useState([]);
+  useEffect(()=>{
+    const load=async()=>{
+      try{
+        const{data}=await supabase.from("tasks").select("*").eq("is_done",false).not("due_date","is",null).order("due_date");
+        if(!data)return;
+        const now=new Date();const in3days=new Date(now);in3days.setDate(in3days.getDate()+3);
+        setUrgentTasks(data.filter(t=>new Date(t.due_date)<=in3days));
+      }catch(e){}
+    };
+    load();
+  },[]);
   const total=leads.length;const totalVal=leads.reduce((a,l)=>a+(l.value||0),0);
   const wonStage=stages.find(s=>s.name==="Won");const lostStage=stages.find(s=>s.name==="Lost");
   const wonLeads=wonStage?leads.filter(l=>l.stage_id===wonStage.id):[];const wonVal=wonLeads.reduce((a,l)=>a+(l.value||0),0);
@@ -166,6 +175,17 @@ function DashboardView({leads,stages}){
   const activeStages=stages.filter(s=>s.name!=="Won"&&s.name!=="Lost");
   const cards=[{label:"Total Leads",value:total,color:"#6366f1"},{label:"Pipeline Value",value:fmt$(totalVal),color:"#3b82f6"},{label:"Won Revenue",value:fmt$(wonVal),color:"#10b981"},{label:"Conversion",value:conv+"%",color:"#f59e0b"},{label:"Forecast",value:fmt$(Math.round(forecast)),color:"#8b5cf6"},{label:"Hot Leads",value:hotLeads,color:"#ef4444"},{label:"Stale Leads",value:staleCount,color:"#f59e0b"},{label:"Active",value:activeLeads.length,color:"#14b8a6"}];
   return(<div>
+    {urgentTasks.length>0&&<div style={{background:"#fff",borderRadius:12,padding:16,border:"1px solid #e2e8f0",marginBottom:16}}>
+      <div style={{fontSize:13,fontWeight:700,color:"#334155",marginBottom:10,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:16}}>🔔</span> Follow-up Reminders ({urgentTasks.length})</div>
+      {urgentTasks.slice(0,8).map(t=>{
+        const over=isOverdue(t.due_date);
+        return <div key={t.id} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",borderBottom:"1px solid #f8fafc"}}>
+          <div style={{width:8,height:8,borderRadius:99,background:over?"#ef4444":"#f59e0b",flexShrink:0}}/>
+          <div style={{flex:1}}><div style={{fontSize:13,fontWeight:500}}>{t.text}</div><div style={{fontSize:11,color:over?"#ef4444":"#94a3b8"}}>{over?"Overdue":"Due"} {fmtDate(t.due_date)}</div></div>
+          <Badge color={over?"#ef4444":"#f59e0b"} style={{fontSize:10}}>{over?"Overdue":"Upcoming"}</Badge>
+        </div>;
+      })}
+    </div>}
     <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(140px, 1fr))",gap:12,marginBottom:20}}>{cards.map(c=><div key={c.label} style={{background:"#fff",borderRadius:12,padding:14,border:"1px solid #e2e8f0"}}><div style={{fontSize:11,color:"#94a3b8",fontWeight:600,marginBottom:4}}>{c.label}</div><div style={{fontSize:22,fontWeight:800,color:c.color}}>{c.value}</div></div>)}</div>
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:16}}>
       <div style={{background:"#fff",borderRadius:12,padding:16,border:"1px solid #e2e8f0"}}><div style={{fontSize:13,fontWeight:700,marginBottom:12}}>Pipeline & Win Probability</div>{activeStages.map(s=>{const sl=leads.filter(l=>l.stage_id===s.id);const val=sl.reduce((a,l)=>a+(l.value||0),0);const wp=getWinProb(s.name);return(<div key={s.id} style={{marginBottom:10}}><div style={{display:"flex",justifyContent:"space-between",fontSize:12,marginBottom:3}}><span style={{fontWeight:600}}>{s.name} <span style={{color:"#94a3b8"}}>({sl.length})</span></span><span style={{color:"#64748b"}}>{fmt$(val)} · {wp}% win</span></div><div style={{height:8,background:"#f1f5f9",borderRadius:99}}><div style={{height:"100%",borderRadius:99,background:s.color,width:(total>0?(sl.length/total)*100:0)+"%"}}/></div></div>);})}</div>
@@ -175,7 +195,7 @@ function DashboardView({leads,stages}){
   </div>);
 }
 
-function SettingsView({stages,customFields,dispatch,profile,profiles,sources,onSourcesChange}){
+function SettingsView({stages,customFields,dispatch,profile,profiles,sources,onSourcesChange,onRoleChange}){
   const [ns,setNS]=useState({name:"",color:"#6366f1"});const [nf,setNF]=useState({name:"",type:"text",options:""});
   const [newSource,setNewSource]=useState("");
   const isAdmin=profile?.role==="admin";
@@ -184,7 +204,7 @@ function SettingsView({stages,customFields,dispatch,profile,profiles,sources,onS
   const delStage=async(id)=>{const st=stages.find(s=>s.id===id);if(st?.is_system||!isAdmin)return;await supabase.from("stages").delete().eq("id",id);dispatch({type:"SET_STAGES",p:stages.filter(s=>s.id!==id)});};
   const addField=async()=>{if(!nf.name||!isAdmin)return;const opts=nf.type==="select"?nf.options.split(",").map(o=>o.trim()).filter(Boolean):[];const{data}=await supabase.from("custom_fields").insert({name:nf.name,field_type:nf.type,options:opts,position:customFields.length}).select().single();if(data)dispatch({type:"SET_CF",p:[...customFields,data]});setNF({name:"",type:"text",options:""});};
   const delField=async(id)=>{if(!isAdmin)return;await supabase.from("custom_fields").delete().eq("id",id);dispatch({type:"SET_CF",p:customFields.filter(f=>f.id!==id)});};
-  const changeRole=async(uid,role)=>{await supabase.from("profiles").update({role:role}).eq("id",uid);};
+  const changeRole=async(uid,role)=>{if(!isAdmin)return;await supabase.from("profiles").update({role:role}).eq("id",uid);if(onRoleChange)onRoleChange(uid,role);};
   const addSource=()=>{if(!newSource.trim()||sources.includes(newSource.trim()))return;onSourcesChange([...sources,newSource.trim()]);setNewSource("");};
   const delSource=(s)=>{onSourcesChange(sources.filter(x=>x!==s));};
 
@@ -235,6 +255,13 @@ export default function CRMDashboard(){
     return function(){subscription.unsubscribe();};
   },[router]);
 
+  const isAdmin=profile?.role==="admin";
+  const isManager=profile?.role==="manager";
+  const visibleLeads=useMemo(()=>{
+    if(isAdmin||isManager)return leads;
+    return leads.filter(l=>l.assignee_id===user?.id||l.created_by===user?.id);
+  },[leads,isAdmin,isManager,user]);
+
   const saveLead=async(f)=>{
     if(f.id&&leads.find(l=>l.id===f.id)){const{data}=await supabase.from("leads").update(f).eq("id",f.id).select().single();if(data){dispatch({type:"UPD_LEAD",p:data});await logActivity(data.id,user.id,"updated",{});}}
     else{const{id,...rest}=f;const{data}=await supabase.from("leads").insert({...rest,created_by:user.id}).select().single();if(data){dispatch({type:"ADD_LEAD",p:data});await logActivity(data.id,user.id,"created",{});}}
@@ -242,9 +269,32 @@ export default function CRMDashboard(){
   };
   const handleSourcesChange=(newSources)=>{dispatch({type:"SET_SOURCES",p:newSources});};
   const logout=async()=>{await supabase.auth.signOut();router.push("/");};
-  const filtered=useMemo(()=>{let r=leads;if(search){const s=search.toLowerCase();r=r.filter(l=>(l.name||"").toLowerCase().includes(s)||(l.company||"").toLowerCase().includes(s)||(l.email||"").toLowerCase().includes(s));}if(filters.stage)r=r.filter(l=>l.stage_id===filters.stage);if(filters.source)r=r.filter(l=>l.source===filters.source);if(filters.assignee)r=r.filter(l=>l.assignee_id===filters.assignee);if(filters.score){r=r.filter(l=>getLeadScore(l,stages).label===filters.score);}return r;},[leads,search,filters,stages]);
+
+  useEffect(()=>{
+    if(!user||loading)return;
+    const checkReminders=async()=>{
+      try{
+        const{data:tasks}=await supabase.from("tasks").select("*").eq("is_done",false).not("due_date","is",null);
+        if(!tasks||tasks.length===0)return;
+        const now=new Date();const tomorrow=new Date(now);tomorrow.setDate(tomorrow.getDate()+1);
+        const urgent=tasks.filter(t=>{const d=new Date(t.due_date);return d<=tomorrow;});
+        if(urgent.length>0&&"Notification" in window&&Notification.permission==="default"){Notification.requestPermission();}
+        if(urgent.length>0&&"Notification" in window&&Notification.permission==="granted"){
+          const overdue=urgent.filter(t=>isOverdue(t.due_date));
+          const upcoming=urgent.filter(t=>!isOverdue(t.due_date));
+          if(overdue.length>0)new Notification("BeeSolver CRM",{body:overdue.length+" overdue task"+(overdue.length>1?"s":"")+"! Check your dashboard.",icon:"🐝"});
+          else if(upcoming.length>0)new Notification("BeeSolver CRM",{body:upcoming.length+" task"+(upcoming.length>1?"s":"")+" due today/tomorrow.",icon:"🐝"});
+        }
+      }catch(e){}
+    };
+    checkReminders();
+    const interval=setInterval(checkReminders,5*60*1000);
+    return()=>clearInterval(interval);
+  },[user,loading]);
+
+  const filtered=useMemo(()=>{let r=visibleLeads;if(search){const s=search.toLowerCase();r=r.filter(l=>(l.name||"").toLowerCase().includes(s)||(l.source||"").toLowerCase().includes(s));}if(filters.stage)r=r.filter(l=>l.stage_id===filters.stage);if(filters.source)r=r.filter(l=>l.source===filters.source);if(filters.assignee)r=r.filter(l=>l.assignee_id===filters.assignee);if(filters.score){r=r.filter(l=>getLeadScore(l,stages).label===filters.score);}return r;},[visibleLeads,search,filters,stages]);
   const activeF=Object.values(filters).filter(Boolean).length;
-  const uniqueSources=[...new Set(leads.map(l=>l.source).filter(Boolean))];
+  const uniqueSources=[...new Set(visibleLeads.map(l=>l.source).filter(Boolean))];
   const selLead=sel?leads.find(l=>l.id===sel.id):null;
   const nav=[{id:"dashboard",icon:IC.dash,label:"Dashboard"},{id:"leads",icon:IC.leads,label:"Leads"},{id:"pipeline",icon:IC.pipe,label:"Pipeline"},{id:"calendar",icon:IC.cal,label:"Calendar"},{id:"settings",icon:IC.gear,label:"Settings"}];
 
@@ -276,15 +326,17 @@ export default function CRMDashboard(){
           <span style={{fontSize:12,color:"#94a3b8"}}>{filtered.length} result{filtered.length!==1?"s":""}</span>
         </div>)}
         <div style={{flex:1,overflow:"auto",padding:20}}>
-          {page==="dashboard"&&<DashboardView leads={leads} stages={stages}/>}
+          {page==="dashboard"&&<DashboardView leads={visibleLeads} stages={stages} user={user} profiles={profiles}/>}
           {page==="leads"&&(view==="table"?<LeadsTable leads={filtered} stages={stages} profiles={profiles} customFields={customFields} dispatch={dispatch}/>:<PipelineView leads={filtered} stages={stages} dispatch={dispatch}/>)}
           {page==="pipeline"&&<PipelineView leads={filtered} stages={stages} dispatch={dispatch}/>}
           {page==="calendar"&&<CalendarView/>}
-          {page==="settings"&&<SettingsView stages={stages} customFields={customFields} dispatch={dispatch} profile={profile} profiles={profiles} sources={sources} onSourcesChange={handleSourcesChange}/>}
+  const handleRoleChange=(uid,role)=>{setProfiles(p=>p.map(x=>x.id===uid?{...x,role}:x));};
+
+          {page==="settings"&&<SettingsView stages={stages} customFields={customFields} dispatch={dispatch} profile={profile} profiles={profiles} sources={sources} onSourcesChange={handleSourcesChange} onRoleChange={handleRoleChange}/>}
         </div>
       </div>
       {selLead&&<LeadDetail lead={selLead} stages={stages} customFields={customFields} profiles={profiles} dispatch={dispatch} onClose={()=>dispatch({type:"SET_SEL",p:null})} user={user} sources={sources}/>}
-      {modal?.type==="addLead"&&<Modal title="New Lead" onClose={()=>dispatch({type:"SET_MODAL",p:null})}><LeadForm stages={stages} customFields={customFields} profiles={profiles} leads={leads} sources={sources} onSave={saveLead} onClose={()=>dispatch({type:"SET_MODAL",p:null})}/></Modal>}
-      {modal?.type==="editLead"&&<Modal title="Edit Lead" onClose={()=>dispatch({type:"SET_MODAL",p:null})}><LeadForm lead={modal.lead} stages={stages} customFields={customFields} profiles={profiles} leads={leads} sources={sources} onSave={saveLead} onClose={()=>dispatch({type:"SET_MODAL",p:null})}/></Modal>}
+      {modal?.type==="addLead"&&<Modal title="New Lead" onClose={()=>dispatch({type:"SET_MODAL",p:null})}><LeadForm stages={stages} customFields={customFields} profiles={profiles} leads={visibleLeads} sources={sources} onSave={saveLead} onClose={()=>dispatch({type:"SET_MODAL",p:null})}/></Modal>}
+      {modal?.type==="editLead"&&<Modal title="Edit Lead" onClose={()=>dispatch({type:"SET_MODAL",p:null})}><LeadForm lead={modal.lead} stages={stages} customFields={customFields} profiles={profiles} leads={visibleLeads} sources={sources} onSave={saveLead} onClose={()=>dispatch({type:"SET_MODAL",p:null})}/></Modal>}
     </div>);
 }
